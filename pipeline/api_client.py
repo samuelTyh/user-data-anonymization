@@ -82,9 +82,7 @@ class FakerAPIClient:
         # Build query parameters
         params = {
             "_quantity": min(quantity, 1000),
-            "_locale": "de_DE",
-            "_birthday_start": birthday_start,
-            "_birthday_end": birthday_end
+            "_birthday_start": birthday_start
         }
         
         # Add gender filter if specified
