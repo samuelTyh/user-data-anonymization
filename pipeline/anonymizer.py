@@ -19,6 +19,7 @@ class DataAnonymizer:
         """Initialize the data anonymizer."""
         # Define fields to retain and their anonymization needs
         self.retained_fields = {
+            "gender": self._pass_through,
             "country": self._pass_through,
             "city": self._pass_through,
             "country_code": self._pass_through,
@@ -31,7 +32,8 @@ class DataAnonymizer:
         # Define PII fields that should be masked
         self.pii_fields = [
             "firstname", "lastname", "phone", "street", 
-            "streetName", "buildingNumber", "zipcode"
+            "streetName", "buildingNumber", "zipcode",
+            "image"
         ]
     
     def anonymize_persons(self, persons: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
