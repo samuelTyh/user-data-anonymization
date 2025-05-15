@@ -1,4 +1,4 @@
-from pipeline.schema import FieldDefinition, TableSchema, PERSON_SCHEMA
+from pipeline.schema import FieldDefinition, TableSchema, ViewDefinition, PERSON_SCHEMA, REPORTING_VIEWS
 
 class TestSchema:
     """Tests for the schema module."""
@@ -52,6 +52,25 @@ class TestSchema:
         assert "name VARCHAR" in sql
         assert "age INTEGER" in sql
     
+    def test_view_definition(self):
+        """Test view definition class."""
+        view = ViewDefinition(
+            name="test_view",
+            description="Test view description",
+            query="""
+            SELECT * FROM {table} WHERE age > 18
+            """
+        )
+        
+        # Test attributes
+        assert view.name == "test_view"
+        assert view.description == "Test view description"
+        
+        # Test get_create_view_sql method
+        sql = view.get_create_view_sql("persons")
+        assert "CREATE OR REPLACE VIEW test_view AS" in sql
+        assert "SELECT * FROM persons WHERE age > 18" in sql.replace("\n", " ").strip()
+    
     def test_person_schema(self):
         """Test the predefined PERSON_SCHEMA."""
         # Test schema name
@@ -84,3 +103,19 @@ class TestSchema:
         # Test SQL generation
         sql = PERSON_SCHEMA.get_create_table_sql()
         assert "CREATE TABLE IF NOT EXISTS persons" in sql
+    
+    def test_reporting_views(self):
+        """Test the predefined REPORTING_VIEWS."""
+        # Check that the REPORTING_VIEWS list is not empty
+        assert len(REPORTING_VIEWS) > 0
+        
+        # Test that each view has the required attributes
+        for view in REPORTING_VIEWS:
+            assert hasattr(view, "name")
+            assert hasattr(view, "description")
+            assert hasattr(view, "query")
+            
+            # Check SQL generation for each view
+            sql = view.get_create_view_sql(PERSON_SCHEMA.name)
+            assert f"CREATE OR REPLACE VIEW {view.name} AS" in sql
+            assert PERSON_SCHEMA.name in sql  # Table name should be replaced
