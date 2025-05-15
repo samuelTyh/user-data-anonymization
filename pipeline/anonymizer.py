@@ -33,7 +33,7 @@ class DataAnonymizer:
         self.pii_fields = [
             "firstname", "lastname", "phone", "street", 
             "streetName", "buildingNumber", "zipcode",
-            "image"
+            "image", "website"
         ]
     
     def anonymize_persons(self, persons: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
