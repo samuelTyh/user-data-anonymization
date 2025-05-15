@@ -125,7 +125,8 @@ python -m pipeline.main --persons 10000 --gender female --output ./data/my_outpu
     ├── test_anonymizer.py
     ├── test_api_client.py
     ├── test_reporter.py
-    └── test_schema.py
+    ├── test_schema.py
+    └── test_storage.py
 ```
 
 ## Pipeline Process
