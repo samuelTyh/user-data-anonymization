@@ -62,7 +62,7 @@ class DuckDBStorage:
     
     def list_views(self):
         """List all views in the database."""
-        return self.execute_query("SHOW VIEWS")
+        return self.execute_query("SELECT view_name FROM duckdb_views() WHERE NOT internal AND NOT temporary")
     
     def get_view_data(self, view_name: str, limit: int = 10):
         """
@@ -116,13 +116,9 @@ class DuckDBStorage:
                 
             except Exception as e:
                 logger.error(f"Error storing batch: {str(e)}")
-                # Continue with next batch
-                continue
+                raise RuntimeError(f"Failed to store persons: {str(e)}")
         
         logger.debug(f"Total persons stored: {total_stored}")
-        if total_stored != len(persons):
-            logger.error(f"Mismatch in stored records: {total_stored} out of {len(persons)}")
-            raise RuntimeError("Mismatch in stored records")
         return total_stored
     
     def export_to_parquet(self, output_path: str) -> bool:
