@@ -59,7 +59,6 @@ class FakerAPIClient:
         quantity: int = 10, 
         gender: str = "", 
         birthday_start: str = "1900-01-01",
-        birthday_end: str = "2000-01-01"
     ) -> List[Dict[str, Any]]:
         """
         Fetch person data from the Faker API.
@@ -68,7 +67,6 @@ class FakerAPIClient:
             quantity: Number of persons to fetch (max 1000 per request)
             gender: Filter by gender (male/female/empty for all)
             birthday_start: Minimum birth date in YYYY-MM-DD format
-            birthday_end: Maximum birth date in YYYY-MM-DD format
             
         Returns:
             List of person data dictionaries
