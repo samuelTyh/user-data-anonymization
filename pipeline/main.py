@@ -64,15 +64,14 @@ def run_pipeline(config: Config):
     anonymizer = DataAnonymizer()
     anonymized_data = anonymizer.anonymize_persons(persons_data)
     logger.info(f"Anonymized {len(anonymized_data)} person records")
-    logger.debug(f"Sample anonymized data: {anonymized_data[:5]}")
     
     # Step 4: Store the data
     logger.info(f"Storing anonymized data to {config.output_path}")
     Path(config.output_path).parent.mkdir(parents=True, exist_ok=True)
-    
     storage = DuckDBStorage(database_path=config.output_path)
     storage.create_schema()
-    storage.store_persons(anonymized_data)
+    total_stored = storage.store_persons(anonymized_data)
+    logger.info(f"Stored {total_stored} anonymized records to database")
     
     # Step 5: Create database views for reporting
     logger.info("Creating database views for reporting")

@@ -48,7 +48,7 @@ class ReportGenerator:
         
         if result and 'percentage' in result[0]:
             percentage = result[0]['percentage']
-            logger.info(f"Percentage of users in Germany using Gmail: {percentage:.2f}%")
+            logger.debug(f"Percentage of users in Germany using Gmail: {percentage:.2f}%")
             return percentage
         else:
             logger.warning("Failed to calculate Germany Gmail percentage")
@@ -82,7 +82,7 @@ class ReportGenerator:
         result = self.storage.execute_query(query, {"limit": limit})
         
         if result:
-            logger.info(f"Top {limit} countries using Gmail: {result}")
+            logger.debug(f"Top {limit} countries using Gmail: {result}")
             return result
         else:
             logger.warning(f"Failed to find top {limit} Gmail countries")
@@ -115,7 +115,7 @@ class ReportGenerator:
         
         if result and 'senior_count' in result[0]:
             count = result[0]['senior_count']
-            logger.info(f"People over {age_threshold} using Gmail: {count}")
+            logger.debug(f"People over {age_threshold} using Gmail: {count}")
             return count
         else:
             logger.warning(f"Failed to count seniors over {age_threshold} using Gmail")
@@ -137,7 +137,7 @@ class ReportGenerator:
             "age_group_stats": self.storage.get_view_data("age_group_stats")
         }
         
-        logger.info("Generated complete report")
+        logger.debug("Generated complete report")
         return report
     
     def save_report_to_json(self, output_path: str) -> bool:
@@ -163,7 +163,7 @@ class ReportGenerator:
             with open(output_path, 'w') as f:
                 json.dump(report, f, indent=2)
             
-            logger.info(f"Report saved to {output_path}")
+            logger.debug(f"Report saved to {output_path}")
             return True
             
         except Exception as e:

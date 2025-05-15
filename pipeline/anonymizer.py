@@ -56,7 +56,7 @@ class DataAnonymizer:
                 # Skip records that can't be properly anonymized
                 continue
         
-        logger.info(f"Anonymized {len(anonymized_persons)} person records")
+        logger.debug(f"Anonymized {len(anonymized_persons)} person records")
         return anonymized_persons
     
     def _anonymize_person(self, person: Dict[str, Any]) -> Dict[str, Any]:

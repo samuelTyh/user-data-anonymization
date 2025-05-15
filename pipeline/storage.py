@@ -37,18 +37,18 @@ class DuckDBStorage:
         
         # Connect to DuckDB
         self.conn = duckdb.connect(database=database_path)
-        logger.info(f"Connected to DuckDB at {database_path}")
+        logger.debug(f"Connected to DuckDB at {database_path}")
     
     def create_schema(self):
         """Create the database schema."""
         # Use the schema definition from schema.py
         create_table_sql = PERSON_SCHEMA.get_create_table_sql()
         self.conn.execute(create_table_sql)
-        logger.info(f"Created table schema for {PERSON_SCHEMA.name}")
+        logger.debug(f"Created table schema for {PERSON_SCHEMA.name}")
     
     def create_views(self):
         """Create database views for reporting purposes."""
-        logger.info("Creating database views for reporting")
+        logger.debug("Creating database views for reporting")
         
         for view in REPORTING_VIEWS:
             create_view_sql = view.get_create_view_sql(PERSON_SCHEMA.name)
@@ -58,7 +58,7 @@ class DuckDBStorage:
             except Exception as e:
                 logger.error(f"Error creating view {view.name}: {str(e)}")
         
-        logger.info(f"Created {len(REPORTING_VIEWS)} database views successfully")
+        logger.debug(f"Created {len(REPORTING_VIEWS)} database views successfully")
     
     def list_views(self):
         """List all views in the database."""
@@ -109,17 +109,20 @@ class DuckDBStorage:
                 df = pd.DataFrame(batch)
                 
                 # Insert the DataFrame directly into the table
-                self.conn.execute(f"INSERT INTO {PERSON_SCHEMA.name} SELECT * FROM ?", df)
+                self.conn.execute(f"INSERT INTO {PERSON_SCHEMA.name} SELECT * FROM df")
                 
                 total_stored += len(batch)
-                logger.info(f"Stored batch of {len(batch)} persons (total: {total_stored})")
+                logger.debug(f"Stored batch of {len(batch)} persons (total: {total_stored})")
                 
             except Exception as e:
                 logger.error(f"Error storing batch: {str(e)}")
                 # Continue with next batch
                 continue
         
-        logger.info(f"Total persons stored: {total_stored}")
+        logger.debug(f"Total persons stored: {total_stored}")
+        if total_stored != len(persons):
+            logger.error(f"Mismatch in stored records: {total_stored} out of {len(persons)}")
+            raise RuntimeError("Mismatch in stored records")
         return total_stored
     
     def export_to_parquet(self, output_path: str) -> bool:
