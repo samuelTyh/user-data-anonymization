@@ -46,6 +46,19 @@ class TableSchema:
         """Get names of fields not marked as ****."""
         return [field.name for field in self.fields if not field.is_masked]
 
+@dataclass
+class ViewDefinition:
+    """Definition of a database view for reporting."""
+    name: str
+    query: str
+    description: str
+    
+    def get_create_view_sql(self, table_name: str) -> str:
+        """Generate the SQL CREATE VIEW statement for this view."""
+        # Replace {table} placeholder with the actual table name
+        view_query = self.query.replace("{table}", table_name)
+        return f"CREATE OR REPLACE VIEW {self.name} AS {view_query}"
+
 # Define the Person schema
 PERSON_SCHEMA = TableSchema(
     name="persons",
@@ -62,14 +75,74 @@ PERSON_SCHEMA = TableSchema(
         FieldDefinition("latitude", "FLOAT", "Loyalty sensitive hashing coordinate"),
         FieldDefinition("longitude", "FLOAT", "Loyalty sensitive hashing coordinate"),
         # PII fields (masked)
-        FieldDefinition("firstname", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("lastname", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("phone", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("street", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("streetName", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("buildingNumber", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("zipcode", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("image", "VARCHAR", "Masked (****)", is_masked=True),
-        FieldDefinition("website", "VARCHAR", "Masked (****)", is_masked=True),
+        FieldDefinition("firstname", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("lastname", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("phone", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("street", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("streetName", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("buildingNumber", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("zipcode", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("image", "VARCHAR", "Masked (***)", is_masked=True),
+        FieldDefinition("website", "VARCHAR", "Masked (***)", is_masked=True),
     ]
 )
+
+# Define reporting views
+REPORTING_VIEWS = [
+    ViewDefinition(
+        name="email_provider_stats",
+        description="Statistics on email provider usage",
+        query="""
+        SELECT 
+            email AS email_provider,
+            COUNT(*) AS user_count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM {table}), 2) AS percentage
+        FROM {table}
+        GROUP BY email
+        ORDER BY user_count DESC
+        """
+    ),
+    ViewDefinition(
+        name="country_stats",
+        description="Country-based user distribution",
+        query="""
+        SELECT 
+            country,
+            COUNT(*) AS user_count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM {table}), 2) AS percentage
+        FROM {table}
+        GROUP BY country
+        ORDER BY user_count DESC
+        """
+    ),
+    ViewDefinition(
+        name="email_by_country",
+        description="Email provider usage by country",
+        query="""
+        SELECT 
+            country,
+            email AS email_provider,
+            COUNT(*) AS user_count,
+            ROUND(COUNT(*) * 100.0 / (
+                SELECT COUNT(*) FROM {table} p2 
+                WHERE p2.country = p1.country
+            ), 2) AS country_percentage
+        FROM {table} p1
+        GROUP BY country, email
+        ORDER BY country, user_count DESC
+        """
+    ),
+    ViewDefinition(
+        name="age_group_stats",
+        description="Age distribution across users",
+        query="""
+        SELECT 
+            birthday AS age_group,
+            COUNT(*) AS user_count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM {table}), 2) AS percentage
+        FROM {table}
+        GROUP BY birthday
+        ORDER BY birthday
+        """
+    )
+]
