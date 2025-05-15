@@ -119,7 +119,7 @@ class FakerAPIClient:
             if not persons:
                 logger.warning("API returned empty data")
             
-            logger.info(f"Successfully retrieved {len(persons)} persons")
+            logger.debug(f"Successfully retrieved {len(persons)} persons")
             return persons
             
         except requests.exceptions.Timeout:

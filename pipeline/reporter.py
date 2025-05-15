@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 from .storage import DuckDBStorage
+from .schema import PERSON_SCHEMA
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class ReportGenerator:
             storage: DuckDB storage instance containing person data
         """
         self.storage = storage
+        self.table_name = PERSON_SCHEMA.name
     
     def get_germany_gmail_percentage(self) -> float:
         """
@@ -35,12 +37,12 @@ class ReportGenerator:
         Returns:
             Percentage as a float
         """
-        query = """
+        query = f"""
         WITH stats AS (
             SELECT
                 COUNT(*) AS total_users,
-                COUNT(CASE WHEN country = 'Germany' AND email LIKE '%gmail.com' THEN 1 END) AS germany_gmail_users
-            FROM persons
+                COUNTIF(country = 'Germany' AND email = 'gmail.com') AS germany_gmail_users
+            FROM {self.table_name}
         )
         SELECT 
             (germany_gmail_users * 100 / total_users) AS percentage
@@ -67,13 +69,13 @@ class ReportGenerator:
         Returns:
             List of country statistics with rank, name, and count
         """
-        query = """
+        query = f"""
         WITH country_counts AS (
             SELECT
                 country,
                 COUNT(*) AS user_count
-            FROM persons
-            WHERE email LIKE '%gmail.com'
+            FROM {self.table_name}
+            WHERE email = 'gmail.com'
             GROUP BY country
             ORDER BY user_count DESC
         ),
@@ -112,17 +114,17 @@ class ReportGenerator:
         Returns:
             Count of seniors using Gmail
         """
-        # Determine all age groups that are older than the threshold, e.g. 60 -> ([60-70], [70-80], [80-90], [90-100])
+        # Determine all age groups that are older than the threshold, e.g. 60 -> ('[60-70]', '[70-80]', '[80-90]', '[90-100]')
         age_group_pattern = [f"'[{age_threshold + x}-{age_threshold + 10 + x}]'" for x in range(0, 50, 10)]
         age_group_pattern = ', '.join(age_group_pattern)
         logger.debug(f"Age group pattern for seniors: {age_group_pattern}")
         
-        query = """
+        query = f"""
         SELECT
             COUNT(*) AS senior_count
-        FROM persons
+        FROM {self.table_name}
         WHERE 
-            email LIKE '%gmail.com'
+            email = 'gmail.com'
             AND birthday IN $pattern
         """
         
