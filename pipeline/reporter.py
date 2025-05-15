@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Any
 
-from storage import DuckDBStorage
+from .storage import DuckDBStorage
 
 logger = logging.getLogger(__name__)
 

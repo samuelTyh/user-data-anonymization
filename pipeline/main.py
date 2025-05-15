@@ -6,11 +6,11 @@ import logging
 import sys
 from pathlib import Path
 
-from api_client import FakerAPIClient
-from anonymizer import DataAnonymizer
-from storage import DuckDBStorage
-from reporter import ReportGenerator
-from config import Config
+from .api_client import FakerAPIClient
+from .anonymizer import DataAnonymizer
+from .storage import DuckDBStorage
+from .reporter import ReportGenerator
+from .config import Config
 
 # Configure logging
 logging.basicConfig(
