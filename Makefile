@@ -17,13 +17,17 @@ help:
 	@echo "  clean      - Remove the container and image"
 	@echo ""
 
+$(DATA_DIR):
+	@echo "Creating data directory: $(DATA_DIR)"
+	mkdir -p $(DATA_DIR)
+
 # Build the Docker image (deployment image by default)
 build:
 	@echo "Building Docker image: $(IMAGE_NAME)"
 	docker build --target deploy -t $(IMAGE_NAME) .
 
 # Run the pipeline with default parameters
-run: $(DATA_DIR) build
+run: $(DATA_DIR) clean build
 	@echo "Running pipeline in Docker container: $(CONTAINER_NAME)"
 	docker run --name $(CONTAINER_NAME) \
 		-v $(PWD)/$(DATA_DIR):/app/data \
