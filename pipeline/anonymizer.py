@@ -7,6 +7,7 @@ from .schema import PERSON_SCHEMA
 
 logger = logging.getLogger(__name__)
 
+
 class DataAnonymizer:
     """
     Anonymizes personal data according to privacy guidelines.
@@ -28,10 +29,10 @@ class DataAnonymizer:
             "country": self._pass_through,
             "city": self._pass_through,
             "country_code": self._pass_through,
-            "email": self._anonymize_email,          # Email provider
-            "birthday": self._generalize_age,        # Age group
-            "latitude": self._anonymize_coordinate,  # Anonymized latitude
-            "longitude": self._anonymize_coordinate, # Anonymized longitude
+            "email": self._anonymize_email,           # Email provider
+            "birthday": self._generalize_age,         # Age group
+            "latitude": self._anonymize_coordinate,   # Anonymized latitude
+            "longitude": self._anonymize_coordinate,  # Anonymized longitude
         }
     
     def anonymize_persons(self, persons: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

@@ -9,6 +9,7 @@ from .schema import PERSON_SCHEMA
 
 logger = logging.getLogger(__name__)
 
+
 class ReportGenerator:
     """
     Generates analytical reports from anonymized person data.

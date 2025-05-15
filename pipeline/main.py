@@ -20,6 +20,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 def run_pipeline(config: Config):
     """
     Execute the complete data pipeline.
@@ -87,6 +88,7 @@ def run_pipeline(config: Config):
     
     logger.info("Pipeline completed successfully")
 
+
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="User Anonymization Data Pipeline")
@@ -122,6 +124,7 @@ def parse_args():
     
     return parser.parse_args()
 
+
 def main():
     """Main entry point."""
     args = parse_args()
@@ -134,6 +137,7 @@ def main():
     )
     
     run_pipeline(config)
+
 
 if __name__ == "__main__":
     main()

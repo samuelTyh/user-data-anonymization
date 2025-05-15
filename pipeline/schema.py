@@ -1,8 +1,9 @@
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class FieldDefinition:
@@ -15,6 +16,7 @@ class FieldDefinition:
     def __str__(self) -> str:
         """Return the field definition as a SQL column definition string."""
         return f"{self.name} {self.data_type},    -- {self.description}"
+
 
 @dataclass
 class TableSchema:
@@ -46,6 +48,7 @@ class TableSchema:
         """Get names of fields not marked as ****."""
         return [field.name for field in self.fields if not field.is_masked]
 
+
 @dataclass
 class ViewDefinition:
     """Definition of a database view for reporting."""
@@ -58,6 +61,7 @@ class ViewDefinition:
         # Replace {table} placeholder with the actual table name
         view_query = self.query.replace("{table}", table_name)
         return f"CREATE OR REPLACE VIEW {self.name} AS {view_query}"
+
 
 # Define the Person schema
 PERSON_SCHEMA = TableSchema(

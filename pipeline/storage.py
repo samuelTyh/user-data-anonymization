@@ -8,6 +8,7 @@ from .schema import PERSON_SCHEMA, REPORTING_VIEWS
 
 logger = logging.getLogger(__name__)
 
+
 class DuckDBStorage:
     """
     DuckDB-based storage for anonymized person data.
@@ -100,7 +101,7 @@ class DuckDBStorage:
         total_stored = 0
         
         for i in range(0, len(persons), batch_size):
-            batch = persons[i:i+batch_size]
+            batch = persons[i:i + batch_size]
             try:
                 # Convert batch to Pandas DataFrame and insert directly
                 # This is more efficient than using a temporary table
@@ -108,7 +109,7 @@ class DuckDBStorage:
                 df = pd.DataFrame(batch)
                 
                 # Insert the DataFrame directly into the table
-                self.conn.execute(f"INSERT INTO {PERSON_SCHEMA.name} SELECT * FROM df")
+                self.conn.execute(f"INSERT INTO {PERSON_SCHEMA.name} SELECT * FROM ?", df)
                 
                 total_stored += len(batch)
                 logger.info(f"Stored batch of {len(batch)} persons (total: {total_stored})")

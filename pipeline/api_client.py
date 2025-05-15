@@ -8,6 +8,7 @@ from urllib3.util import Retry
 
 logger = logging.getLogger(__name__)
 
+
 class FakerAPIClient:
     """
     Client for interacting with the Faker API.
