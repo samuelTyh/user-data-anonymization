@@ -73,7 +73,11 @@ def run_pipeline(config: Config):
     storage.create_schema()
     storage.store_persons(anonymized_data)
     
-    # Step 5: Generate reports and save to JSON
+    # Step 5: Create database views for reporting
+    logger.info("Creating database views for reporting")
+    storage.create_views()
+    
+    # Step 6: Generate reports and save to JSON
     logger.info("Generating reports")
     reporter = ReportGenerator(storage)
     report_path = Path(config.report_path)

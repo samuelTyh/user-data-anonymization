@@ -4,7 +4,7 @@ from typing import Dict, List, Any, Optional
 
 import duckdb
 
-from .schema import PERSON_SCHEMA
+from .schema import PERSON_SCHEMA, REPORTING_VIEWS
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,7 @@ class DuckDBStorage:
     - Parquet export/import for data sharing
     - Schema validation
     - Basic data quality checks
+    - Predefined views for reporting
     """
     
     def __init__(self, database_path: str = ":memory:"):
@@ -43,6 +44,42 @@ class DuckDBStorage:
         create_table_sql = PERSON_SCHEMA.get_create_table_sql()
         self.conn.execute(create_table_sql)
         logger.info(f"Created table schema for {PERSON_SCHEMA.name}")
+    
+    def create_views(self):
+        """Create database views for reporting purposes."""
+        logger.info("Creating database views for reporting")
+        
+        for view in REPORTING_VIEWS:
+            create_view_sql = view.get_create_view_sql(PERSON_SCHEMA.name)
+            try:
+                self.conn.execute(create_view_sql)
+                logger.debug(f"Created view: {view.name}")
+            except Exception as e:
+                logger.error(f"Error creating view {view.name}: {str(e)}")
+        
+        logger.info(f"Created {len(REPORTING_VIEWS)} database views successfully")
+    
+    def list_views(self):
+        """List all views in the database."""
+        return self.execute_query("SHOW VIEWS")
+    
+    def get_view_data(self, view_name: str, limit: int = 10):
+        """
+        Retrieve data from a specific view.
+        
+        Args:
+            view_name: Name of the view to query
+            limit: Maximum number of rows to return
+            
+        Returns:
+            List of result rows as dictionaries
+        """
+        try:
+            query = f"SELECT * FROM {view_name} LIMIT {limit}"
+            return self.execute_query(query)
+        except Exception as e:
+            logger.error(f"Error retrieving data from view {view_name}: {str(e)}")
+            return []
     
     def store_persons(self, persons: List[Dict[str, Any]]) -> int:
         """
