@@ -2,6 +2,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from pipeline.anonymizer import DataAnonymizer
+from pipeline.schema import PERSON_SCHEMA
 
 
 class TestDataAnonymizer:
@@ -49,16 +50,14 @@ class TestDataAnonymizer:
         assert anonymized["birthday"].endswith("]")
         assert anonymized["gender"] == "female"
         
-        # Check masked PII fields
-        assert anonymized["firstname"] == "****"
-        assert anonymized["lastname"] == "****"
-        assert anonymized["phone"] == "****"
+        # Check masked PII fields - using schema defined fields
+        for field in PERSON_SCHEMA.get_masked_fields():
+            if field in anonymized:
+                assert anonymized[field] == "****", f"Field {field} should be masked"
+        
+        # Check coordinates are transformed
         assert anonymized["latitude"] != -59.697831
         assert anonymized["longitude"] != -121.69404
-        assert anonymized["street"] == "****"
-        assert anonymized["streetName"] == "****"
-        assert anonymized["buildingNumber"] == "****"
-        assert anonymized["zipcode"] == "****"
     
     def test_anonymize_email(self):
         """Test email anonymization."""

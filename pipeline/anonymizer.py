@@ -3,6 +3,8 @@ from datetime import datetime
 import random
 from typing import Dict, List, Any
 
+from .schema import PERSON_SCHEMA
+
 logger = logging.getLogger(__name__)
 
 class DataAnonymizer:
@@ -17,24 +19,20 @@ class DataAnonymizer:
     
     def __init__(self):
         """Initialize the data anonymizer."""
+        # Get field definitions from schema
+        self.pii_fields = PERSON_SCHEMA.get_masked_fields()
+        
         # Define fields to retain and their anonymization needs
         self.retained_fields = {
             "gender": self._pass_through,
             "country": self._pass_through,
             "city": self._pass_through,
             "country_code": self._pass_through,
-            "email": self._anonymize_email,        # Email provider
-            "birthday": self._generalize_age,     # Age group
+            "email": self._anonymize_email,          # Email provider
+            "birthday": self._generalize_age,        # Age group
             "latitude": self._anonymize_coordinate,  # Anonymized latitude
             "longitude": self._anonymize_coordinate, # Anonymized longitude
         }
-        
-        # Define PII fields that should be masked
-        self.pii_fields = [
-            "firstname", "lastname", "phone", "street", 
-            "streetName", "buildingNumber", "zipcode",
-            "image", "website"
-        ]
     
     def anonymize_persons(self, persons: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -78,7 +76,7 @@ class DataAnonymizer:
             if field in person:
                 anonymized[field] = anonymize_func(person[field])
             # Handle fields for address object
-            elif field in person.get('address'):
+            elif field in person.get('address', {}):
                 anonymized[field] = anonymize_func(person.get('address')[field])
             else:
                 logger.warning(f"Field '{field}' not found in person data")
@@ -90,7 +88,7 @@ class DataAnonymizer:
                 logger.debug(f"Masking PII field '{field}' with value '{non_anonymized_value}'")
                 # Mask the PII field
                 anonymized[field] = "****"
-            elif field in person.get('address'):
+            elif field in person.get('address', {}):
                 non_anonymized_value = person.get('address')[field]
                 logger.debug(f"Masking PII field '{field}' with value '{non_anonymized_value}'")
                 # Mask the PII field

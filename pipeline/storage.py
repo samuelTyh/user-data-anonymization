@@ -4,6 +4,8 @@ from typing import Dict, List, Any, Optional
 
 import duckdb
 
+from .schema import PERSON_SCHEMA
+
 logger = logging.getLogger(__name__)
 
 class DuckDBStorage:
@@ -37,28 +39,10 @@ class DuckDBStorage:
     
     def create_schema(self):
         """Create the database schema."""
-        self.conn.execute("""
-            CREATE TABLE IF NOT EXISTS persons (
-                gender VARCHAR,          -- Male, Female or Other
-                country VARCHAR,         -- Country name
-                city VARCHAR,            -- City name
-                country_code VARCHAR,    -- Country code (e.g., US)
-                email VARCHAR,           -- Domain part only (anonymized)
-                birthday VARCHAR,        -- Age group (e.g., [30-40])
-                latitude FLOAT,          -- Loyalty sensitive hashing coordinate
-                longitude FLOAT,         -- Loyalty sensitive hashing coordinate
-                firstname VARCHAR,       -- Masked (****)
-                lastname VARCHAR,        -- Masked (****)
-                phone VARCHAR,           -- Masked (****)
-                street VARCHAR,          -- Masked (****)
-                streetName VARCHAR,      -- Masked (****)
-                buildingNumber VARCHAR,  -- Masked (****)
-                zipcode VARCHAR,         -- Masked (****)
-                image VARCHAR,           -- Masked (****)
-                website VARCHAR          -- Masked (****)
-            )
-        """)
-        logger.info("Database schema created")
+        # Use the schema definition from schema.py
+        create_table_sql = PERSON_SCHEMA.get_create_table_sql()
+        self.conn.execute(create_table_sql)
+        logger.info(f"Created table schema for {PERSON_SCHEMA.name}")
     
     def store_persons(self, persons: List[Dict[str, Any]]) -> int:
         """
@@ -87,7 +71,7 @@ class DuckDBStorage:
                 df = pd.DataFrame(batch)
                 
                 # Insert the DataFrame directly into the table
-                self.conn.execute("INSERT INTO persons SELECT * FROM df")
+                self.conn.execute(f"INSERT INTO {PERSON_SCHEMA.name} SELECT * FROM df")
                 
                 total_stored += len(batch)
                 logger.info(f"Stored batch of {len(batch)} persons (total: {total_stored})")
@@ -116,7 +100,7 @@ class DuckDBStorage:
             
             # Export data to Parquet
             self.conn.execute(f"""
-                COPY (SELECT * FROM persons) TO '{output_path}' (FORMAT PARQUET)
+                COPY (SELECT * FROM {PERSON_SCHEMA.name}) TO '{output_path}' (FORMAT PARQUET)
             """)
             
             logger.info(f"Exported data to {output_path}")
@@ -142,12 +126,12 @@ class DuckDBStorage:
             
             # Import data from Parquet
             self.conn.execute(f"""
-                INSERT INTO persons
+                INSERT INTO {PERSON_SCHEMA.name}
                 SELECT * FROM read_parquet('{input_path}')
             """)
             
             # Count imported records
-            result = self.conn.execute("SELECT COUNT(*) FROM persons").fetchone()
+            result = self.conn.execute(f"SELECT COUNT(*) FROM {PERSON_SCHEMA.name}").fetchone()
             count = result[0] if result else 0
             
             logger.info(f"Imported {count} records from {input_path}")
