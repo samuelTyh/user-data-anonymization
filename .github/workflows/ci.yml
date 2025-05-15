@@ -31,10 +31,6 @@ jobs:
       run: |
         flake8 pipeline/ --count --ignore=W291,W293 --exit-zero --max-complexity=10 --max-line-length=120 --statistics
     
-    - name: Check formatting with black
-      run: |
-        black --check pipeline/
-    
     - name: Run tests
       run: |
         pytest

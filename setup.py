@@ -17,7 +17,6 @@ setup(
         "dev": [
             "pytest==8.3.5",
             "pytest-cov==6.1.1",
-            "black==25.1.0",
             "flake8==7.2.0",
         ],
     },
