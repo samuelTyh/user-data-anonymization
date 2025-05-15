@@ -1,4 +1,6 @@
 # User Data Anonymization Pipeline
+[![CI Status](https://github.com/samuelTyh/user-data-anonymization/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelTyh/user-data-anonymization/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/samuelTyh/user-data-anonymization/graph/badge.svg?token=FYKVODE97R)](https://codecov.io/gh/samuelTyh/user-data-anonymization)
 
 A data pipeline that ingests data from an external API, anonymizes it according to privacy guidelines, stores it securely, and generates analytical reports.
 
