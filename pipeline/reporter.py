@@ -37,16 +37,10 @@ class ReportGenerator:
         Returns:
             Percentage as a float
         """
-        query = f"""
-        WITH stats AS (
-            SELECT
-                COUNT(*) AS total_users,
-                COUNTIF(country = 'Germany' AND email = 'gmail.com') AS germany_gmail_users
-            FROM {self.table_name}
-        )
-        SELECT 
-            (germany_gmail_users * 100 / total_users) AS percentage
-        FROM stats
+        query = """
+        SELECT country_percentage AS percentage
+        FROM email_by_country
+        WHERE country = 'Germany' AND email_provider = 'gmail.com'
         """
         
         result = self.storage.execute_query(query)
@@ -58,7 +52,7 @@ class ReportGenerator:
         else:
             logger.warning("Failed to calculate Germany Gmail percentage")
             return 0.0
-    
+
     def get_top_gmail_countries(self, limit: int = 3) -> List[Dict[str, Any]]:
         """
         Find the top countries using Gmail as email provider.
@@ -69,28 +63,17 @@ class ReportGenerator:
         Returns:
             List of country statistics with rank, name, and count
         """
-        query = f"""
-        WITH country_counts AS (
-            SELECT
-                country,
-                COUNT(*) AS user_count
-            FROM {self.table_name}
-            WHERE email = 'gmail.com'
-            GROUP BY country
-            ORDER BY user_count DESC
-        ),
-        ranked_countries AS (
-            SELECT
+        query = """
+        WITH gmail_countries AS (
+            SELECT 
                 country,
                 user_count,
                 RANK() OVER (ORDER BY user_count DESC) AS rank
-            FROM country_counts
+            FROM email_by_country
+            WHERE email_provider = 'gmail.com'
         )
-        SELECT
-            rank,
-            country,
-            user_count
-        FROM ranked_countries
+        SELECT rank, country, user_count
+        FROM gmail_countries
         WHERE rank <= $limit
         ORDER BY rank
         """
@@ -103,7 +86,7 @@ class ReportGenerator:
         else:
             logger.warning(f"Failed to find top {limit} Gmail countries")
             return []
-    
+
     def get_seniors_with_gmail(self, age_threshold: int = 60) -> int:
         """
         Count people over the specified age using Gmail.
@@ -114,21 +97,20 @@ class ReportGenerator:
         Returns:
             Count of seniors using Gmail
         """
-        # Determine all age groups that are older than the threshold, e.g. 60 -> ('[60-70]', '[70-80]', '[80-90]', '[90-100]')
-        age_group_pattern = [f"'[{age_threshold + x}-{age_threshold + 10 + x}]'" for x in range(0, 50, 10)]
-        age_group_pattern = ', '.join(age_group_pattern)
-        logger.debug(f"Age group pattern for seniors: {age_group_pattern}")
+        # Determine all age groups that are older than the threshold
+        age_groups = [f"'[{age_threshold + x}-{age_threshold + 10 + x}]'" for x in range(0, 50, 10)]
+        age_groups_str = ', '.join(age_groups)
+        logger.debug(f"Age group pattern for seniors: {age_groups_str}")
         
         query = f"""
-        SELECT
-            COUNT(*) AS senior_count
+        SELECT COUNT(*) AS senior_count
         FROM {self.table_name}
         WHERE 
             email = 'gmail.com'
-            AND birthday IN $pattern
+            AND birthday IN ({age_groups_str})
         """
         
-        result = self.storage.execute_query(query, {"pattern": age_group_pattern})
+        result = self.storage.execute_query(query)
         
         if result and 'senior_count' in result[0]:
             count = result[0]['senior_count']
@@ -137,7 +119,7 @@ class ReportGenerator:
         else:
             logger.warning(f"Failed to count seniors over {age_threshold} using Gmail")
             return 0
-    
+
     def generate_full_report(self) -> Dict[str, Any]:
         """
         Generate a complete report with all metrics.
@@ -148,7 +130,10 @@ class ReportGenerator:
         report = {
             "germany_gmail_percentage": self.get_germany_gmail_percentage(),
             "top_gmail_countries": self.get_top_gmail_countries(limit=3),
-            "seniors_with_gmail": self.get_seniors_with_gmail(age_threshold=60)
+            "seniors_with_gmail": self.get_seniors_with_gmail(age_threshold=60),
+            "email_provider_stats": self.storage.get_view_data("email_provider_stats", limit=5),
+            "country_stats": self.storage.get_view_data("country_stats", limit=5),
+            "age_group_stats": self.storage.get_view_data("age_group_stats")
         }
         
         logger.info("Generated complete report")
