@@ -40,6 +40,7 @@ This project implements a data pipeline that:
 - **Containerization**: Docker support for easy deployment
 - **Testing**: Comprehensive test suite with high code coverage
 - **CI/CD**: GitHub Actions workflow for continuous integration
+- **Prefect Integration**: Orchestrator for scheduling, monitoring, and managing the pipeline
 
 ## Requirements
 
@@ -93,6 +94,18 @@ python -m pipeline.main
 python -m pipeline.main --persons 10000 --gender female --output ./data/my_output.duckdb
 ```
 
+### Using Prefect
+
+```bash
+# Start a Prefect server
+make prefect-server
+
+# Deploy the flow with scheduling
+make prefect-deploy
+
+# Operate and monitor flows, deployment, and runs in web UI via localhost:4200
+```
+
 ### Command-line Arguments
 
 | Argument | Description | Default |
@@ -109,6 +122,12 @@ python -m pipeline.main --persons 10000 --gender female --output ./data/my_outpu
 ├── Dockerfile              # Docker configuration
 ├── Makefile                # Build and run automation
 ├── README.md               # Project documentation
+├── orchestration/          # NEW: All orchestration-related code
+│   ├── __init__.py         # Makes orchestration a proper package
+│   ├── prefect_flow.py     # Main Prefect flow definition
+│   └── scripts/            # Deployment and execution scripts
+│       ├── __init__.py
+│       └── deploy.py       # Simple deployment script
 ├── pipeline                # Main package
 │   ├── __init__.py
 │   ├── anonymizer.py       # Data anonymization logic

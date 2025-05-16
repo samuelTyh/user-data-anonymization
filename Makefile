@@ -1,4 +1,4 @@
-.PHONY: help build run stop clean
+.PHONY: help build run stop clean prefect-server prefect-deploy test
 
 # Configuration variables
 IMAGE_NAME := anonymization-pipeline
@@ -9,12 +9,14 @@ help:
 	@echo "User Data Anonymization Pipeline"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  help       - Show this help message"
-	@echo "  build      - Build the Docker deployment image"
-	@echo "  run        - Run the pipeline in a Docker container"
-	@echo "  test       - Run all tests using the test image"
-	@echo "  stop       - Stop the running container"
-	@echo "  clean      - Remove the container and image"
+	@echo "  help                - Show this help message"
+	@echo "  build               - Build the Docker deployment image"
+	@echo "  run                 - Run the pipeline in a Docker container"
+	@echo "  test                - Run all tests using the test image"
+	@echo "  stop                - Stop the running container"
+	@echo "  clean               - Remove the container and image"
+	@echo "  prefect-server      - Start a local Prefect server"
+	@echo "  prefect-deploy      - Deploy the flow to Prefect"
 	@echo ""
 
 $(DATA_DIR):
@@ -54,3 +56,13 @@ test:
 	docker run --rm \
 		-v $(PWD)/$(DATA_DIR):/app/data \
 		$(IMAGE_NAME)-test
+
+# Start a local Prefect server
+prefect-server:
+	@echo "Starting Prefect server"
+	prefect server start
+
+# Deploy the flow to Prefect
+prefect-deploy: $(DATA_DIR)
+	@echo "Deploying flow to Prefect"
+	python orchestration/scripts/deploy.py
